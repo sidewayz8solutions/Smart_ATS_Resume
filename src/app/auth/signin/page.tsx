@@ -121,7 +121,7 @@ function SignInContent() {
             <Button
               onClick={() => alert('Email sign-in not yet implemented - use Supabase dashboard')}
               className="w-full"
-              variant="default"
+              variant="primary"
             >
               Sign In with Email
             </Button>
