@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
-import { FcGoogle } from 'react-icons/fc';
+// Email-only auth - Google OAuth removed per user request
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 function SignInContent() {
@@ -99,15 +99,33 @@ function SignInContent() {
             </div>
           )}
 
-          <Button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3"
-            variant="outline"
-          >
-            <FcGoogle className="w-5 h-5" />
-            {loading ? 'Signing in...' : 'Continue with Google'}
-          </Button>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                id="email"
+                type="email"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                id="password"
+                type="password"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="••••••••"
+              />
+            </div>
+            <Button
+              onClick={() => alert('Email sign-in not yet implemented - use Supabase dashboard')}
+              className="w-full"
+              variant="default"
+            >
+              Sign In with Email
+            </Button>
+          </div>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             By signing in, you agree to our{' '}
