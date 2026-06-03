@@ -1,10 +1,11 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   // Turbopack configuration
   turbopack: {
     // Root directory to resolve the lockfile warning
-    root: process.cwd(),
+    root: path.resolve(__dirname),
   },
   
   // Image optimization configuration
