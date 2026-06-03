@@ -110,9 +110,30 @@ const PricingPage = () => {
         'Priority email support',
         'Resume analytics'
       ],
-      highlighted: true,
+      highlighted: false,
       buttonText: 'Start Pro Monthly',
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
+    },
+    {
+      name: 'Premium',
+      price: 70,
+      period: 'month',
+      mascotImage: '/Donkey4.png',
+      description: 'Ultimate resume powerhouse for executives and career changers',
+      features: [
+        'Everything in Pro Monthly',
+        'Human review by HR experts',
+        'Cover letter builder',
+        'LinkedIn profile optimizer',
+        'Interview prep materials',
+        '1-on-1 career coaching session',
+        'Custom resume templates',
+        'Priority phone support',
+        '30-day money-back guarantee'
+      ],
+      highlighted: true,
+      buttonText: 'Start Premium',
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID
     },
     {
       name: 'Pro Yearly',
