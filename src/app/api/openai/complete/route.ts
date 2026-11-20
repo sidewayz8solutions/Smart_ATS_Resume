@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { getAIProvider } from '@/lib/ai/provider';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,19 +24,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      console.error('OPENAI_API_KEY is not configured');
+    const ai = getAIProvider();
+    if (!ai) {
+      console.error('No AI provider configured: set OPENROUTER_API_KEY or OPENAI_API_KEY');
       return NextResponse.json(
         { error: 'AI service is temporarily unavailable. Please try again later.' },
         { status: 503 }
       );
     }
 
-    const openai = new OpenAI({ apiKey });
+    const openai = ai.client;
 
     const completion = await openai.chat.completions.create({
-      model,
+      model: ai.model,
       messages: [{ role: 'user', content: prompt }],
       temperature: Math.max(0, Math.min(2, temperature)),
       max_tokens: Math.max(1, Math.min(4000, maxTokens)),

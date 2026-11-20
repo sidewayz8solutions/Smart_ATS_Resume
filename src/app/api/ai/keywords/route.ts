@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { getAIProvider } from '@/lib/ai/provider';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,15 +23,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
+    const ai = getAIProvider();
+    if (!ai) {
+      console.error('No AI provider configured: set OPENROUTER_API_KEY or OPENAI_API_KEY');
       return NextResponse.json(
         { error: 'AI service is temporarily unavailable. Please try again later.' },
         { status: 503 }
       );
     }
 
-    const openai = new OpenAI({ apiKey });
+    const openai = ai.client;
 
     const prompt = `You are an ATS optimization assistant. Extract and generate the most important keywords and key phrases that should appear in a resume so it ranks well for this role.
 
@@ -55,7 +56,7 @@ Existing Keywords: ${(existingKeywords || []).join(', ') || 'None'}
 `;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: ai.model,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
       max_tokens: 600,

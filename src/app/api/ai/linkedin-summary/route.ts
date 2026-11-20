@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { getAIProvider } from '@/lib/ai/provider';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,13 +19,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Resume content is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      console.error('OPENAI_API_KEY is not configured');
-      return NextResponse.json({ error: 'AI service is temporarily unavailable. Please try again later.' }, { status: 503 });
+    const ai = getAIProvider();
+    if (!ai) {
+      console.error('No AI provider configured: set OPENROUTER_API_KEY or OPENAI_API_KEY');
+      return NextResponse.json(
+        { error: 'AI service is temporarily unavailable. Please try again later.' },
+        { status: 503 }
+      );
     }
 
-    const openai = new OpenAI({ apiKey });
+    const openai = ai.client;
 
     // Build prompt: provide resume (structured or plain text) and request an "About" section suitable for LinkedIn
     const resumeText = typeof resume === 'string' ? resume : JSON.stringify(resume);
@@ -33,7 +36,7 @@ export async function POST(req: NextRequest) {
     const prompt = `You are a professional career copywriter. Given the following resume content, generate a LinkedIn "About" section (3-5 concise sentences) that highlights strengths, uses professional language, and includes relevant keywords for ATS and recruiter searches. Keep it friendly but professional, and under 700 characters. Return only the text for the About section without extra commentary.\n\nResume:\n${resumeText}`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: ai.model,
       messages: [
         { role: 'user', content: prompt }
       ],

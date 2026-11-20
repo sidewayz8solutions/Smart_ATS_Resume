@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { getAIProvider } from '@/lib/ai/provider';
 
 interface BulletPointRequest {
   jobTitle: string;
@@ -59,15 +59,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Check for OpenAI API key
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      console.error('OPENAI_API_KEY is not configured');
-      return NextResponse.json(
-        { error: 'AI service is temporarily unavailable. Please try again later.' },
-        { status: 503 }
-      );
-    }
-
     // Format role history for the prompt
     const formattedRoleHistory = roleHistory
       .map((role, index) => {
@@ -107,10 +98,19 @@ Example format:
 ["Bullet point 1", "Bullet point 2", "Bullet point 3", "Bullet point 4", "Bullet point 5"]`;
 
     // Call OpenAI API
-    const openai = new OpenAI({ apiKey });
+    const ai = getAIProvider();
+    if (!ai) {
+      console.error('No AI provider configured: set OPENROUTER_API_KEY or OPENAI_API_KEY');
+      return NextResponse.json(
+        { error: 'AI service is temporarily unavailable. Please try again later.' },
+        { status: 503 }
+      );
+    }
+
+    const openai = ai.client;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: ai.model,
       messages: [
         {
           role: 'system',

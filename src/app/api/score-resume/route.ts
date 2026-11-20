@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAIProvider } from '@/lib/ai/provider';
 
 interface ATSScoreResult {
   overall: number;
@@ -17,9 +18,9 @@ interface ATSScoreResult {
 // OpenAI-powered ATS scoring
 // ---------------------------------------------------------------------------
 async function scoreWithOpenAI(resumeText: string): Promise<ATSScoreResult | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.warn('OPENAI_API_KEY not configured — falling back to rule-based scoring');
+  const ai = getAIProvider();
+  if (!ai) {
+    console.warn('No AI provider configured (OPENROUTER_API_KEY / OPENAI_API_KEY) — falling back to rule-based scoring');
     return null;
   }
 
@@ -46,34 +47,20 @@ Provide 2-5 specific, actionable issues and 2-5 practical suggestions.
 Return ONLY valid JSON, no markdown or explanation.`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Analyze this resume:\n\n${resumeText.slice(0, 12000)}` },
-        ],
-        temperature: 0.3,
-        max_tokens: 1000,
-      }),
+    const completion = await ai.client.chat.completions.create({
+      model: ai.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Analyze this resume:\n\n${resumeText.slice(0, 12000)}` },
+      ],
+      temperature: 0.3,
+      max_tokens: 1000,
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('OpenAI API error:', response.status, errorBody);
-      return null;
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const content = completion.choices?.[0]?.message?.content;
 
     if (!content) {
-      console.error('OpenAI returned empty content');
+      console.error('AI provider returned empty content');
       return null;
     }
 
