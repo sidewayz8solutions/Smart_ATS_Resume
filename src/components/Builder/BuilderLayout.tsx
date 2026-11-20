@@ -772,6 +772,10 @@ export default function BuilderLayout({ initialData, resumeId }: BuilderLayoutPr
     setIsSaving(true);
     try {
       await saveResume(resumeId || 'new', resumeData);
+      toast.success('Resume saved');
+    } catch (error) {
+      console.error('Save failed:', error);
+      toast.error('Could not save your resume. Please try again.');
     } finally {
       // Keep saving indicator visible for at least 500ms to prevent flashing
       if (savingTimeoutRef.current) {
