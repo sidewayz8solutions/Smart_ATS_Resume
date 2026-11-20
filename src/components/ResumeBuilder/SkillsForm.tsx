@@ -1,6 +1,6 @@
 // src/components/ResumeBuilder/SkillsForm.tsx - Create this file
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, X, Code, Target, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -21,6 +21,15 @@ interface SkillsFormProps {
 
 export default function SkillsForm({ initialData, onUpdate }: SkillsFormProps) {
   const [skills, setSkills] = useState<Skill[]>(initialData);
+
+  // Same hydration issue as PersonalInfoForm: the saved resume arrives after
+  // this component mounts, so adopt it once it has real content.
+  useEffect(() => {
+    if (initialData && initialData.length > 0 && initialData !== skills) {
+      setSkills(initialData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
   const [newSkill, setNewSkill] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'technical' | 'soft' | 'language'>('technical');
   const [selectedLevel, setSelectedLevel] = useState<'beginner' | 'intermediate' | 'advanced' | 'expert'>('intermediate');

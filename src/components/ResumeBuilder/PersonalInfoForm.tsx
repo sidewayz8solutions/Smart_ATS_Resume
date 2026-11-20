@@ -1,6 +1,6 @@
 // src/components/ResumeBuilder/PersonalInfoForm.tsx
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 // Define the PersonalInfo interface
@@ -21,6 +21,20 @@ interface PersonalInfoFormProps {
 
 export default function PersonalInfoForm({ initialData, onUpdate }: PersonalInfoFormProps) {
   const [formData, setFormData] = useState<PersonalInfo>(initialData);
+
+  // The form mounts before the saved resume is hydrated (the builder page
+  // fetches it after mount), so copy incoming values in when they actually
+  // differ. Comparing values instead of object identity keeps this from
+  // fighting the user's typing on every keystroke.
+  useEffect(() => {
+    setFormData((prev) => {
+      const incoming = initialData || ({ fullName: '', email: '' } as PersonalInfo);
+      const differs = (Object.keys(incoming) as (keyof PersonalInfo)[]).some(
+        (key) => (incoming[key] ?? '') !== (prev[key] ?? '')
+      );
+      return differs ? { ...prev, ...incoming } : prev;
+    });
+  }, [initialData]);
 
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     const updated = { ...formData, [field]: value };

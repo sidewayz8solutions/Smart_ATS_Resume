@@ -26,6 +26,7 @@ function BuilderPageInner() {
   const router = useRouter();
   const supabase = useSupabase();
   const { updateResumeData, resetResumeData } = useResumeStore();
+  const storeSetResumeData = useResumeStore((s) => s.setResumeData);
 
   const [loading, setLoading] = useState(true);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
@@ -67,6 +68,9 @@ function BuilderPageInner() {
         }
 
         setResumeData(data.content);
+        // Seed the store before the builder mounts so every section's form
+        // initialises with the saved values instead of blanks.
+        storeSetResumeData(data.content);
       } else {
         // New resume flow: reset to blank state first
         resetResumeData();
