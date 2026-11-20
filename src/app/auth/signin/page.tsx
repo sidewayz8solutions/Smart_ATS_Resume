@@ -4,6 +4,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { describeAuthError } from '@/lib/auth-errors';
 import { Button } from '@/components/ui/Button';
 // Email-only auth - Google OAuth removed per user request
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
@@ -72,7 +73,7 @@ function SignInContent() {
 
       if (error) {
         console.error('Sign in error:', error);
-        setError(error.message);
+        setError(describeAuthError(error));
       }
     } catch (error) {
       console.error('Unexpected error:', error);

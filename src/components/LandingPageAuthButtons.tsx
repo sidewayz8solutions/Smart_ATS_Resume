@@ -17,7 +17,9 @@ export function HeroAuthButtons() {
 
         if (error) {
           console.warn('Auth check error:', error.message);
-          setError(error.message);
+          // A failed session check is usually the network or the auth
+          // service, not a configuration problem. Fall back to the
+          // signed-out buttons instead of showing an error on the page.
         } else {
           setUser(user);
         }
@@ -119,7 +121,9 @@ export function NavbarAuthButtons() {
 
         if (error) {
           console.warn('Auth check error:', error.message);
-          setError(error.message);
+          // A failed session check is usually the network or the auth
+          // service, not a configuration problem. Fall back to the
+          // signed-out buttons instead of showing an error on the page.
         } else {
           setUser(user);
         }

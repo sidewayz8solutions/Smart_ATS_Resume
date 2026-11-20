@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
 import { createClient } from '@/lib/supabase/client';
+import { describeAuthError } from '@/lib/auth-errors';
 
 export default function SignupPage(): React.JSX.Element {
   const router = useRouter();
@@ -104,8 +105,9 @@ export default function SignupPage(): React.JSX.Element {
 
       if (error) {
         console.error('Signup error:', error);
-        setError(error.message);
-        toast.error(error.message);
+        const message = describeAuthError(error);
+        setError(message);
+        toast.error(message);
         return;
       }
 

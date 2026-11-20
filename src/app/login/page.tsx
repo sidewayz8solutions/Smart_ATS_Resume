@@ -21,6 +21,7 @@ import {
 import { toast } from 'react-hot-toast';
 
 import { createClient } from '@/lib/supabase/client';
+import { describeAuthError } from '@/lib/auth-errors';
 
 function LoginContent() {
   const router = useRouter();
@@ -82,7 +83,7 @@ function LoginContent() {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(describeAuthError(error));
       }
     } catch (error) {
       console.error('Google login error:', error);
@@ -146,8 +147,9 @@ function LoginContent() {
 
               if (error) {
                 console.error('Sign in error:', error);
-                setError(error.message);
-                toast.error(error.message);
+                const message = describeAuthError(error);
+                setError(message);
+                toast.error(message);
               } else if (data.user) {
                 console.log('Sign in successful, user:', data.user.email);
                 // Don't redirect here, let the auth state listener handle it

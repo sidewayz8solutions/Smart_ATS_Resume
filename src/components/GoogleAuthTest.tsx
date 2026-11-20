@@ -89,7 +89,7 @@ export default function GoogleAuthTest() {
         <p><strong>Expected Setup:</strong></p>
         <ul className="list-disc list-inside mt-2">
           <li>Google OAuth configured in Supabase Dashboard</li>
-          <li>Redirect URI: <code>https://uxzpopwpbqfhfsbtlvim.supabase.co/auth/v1/callback</code></li>
+          <li>Redirect URI: <code>{process.env.NEXT_PUBLIC_SUPABASE_URL ? `${process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, '')}/auth/v1/callback` : 'https://<project-ref>.supabase.co/auth/v1/callback'}</code></li>
           <li>Local redirect: <code>http://localhost:3000/auth/callback</code></li>
         </ul>
       </div>
