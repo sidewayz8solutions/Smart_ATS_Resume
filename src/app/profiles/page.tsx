@@ -79,8 +79,9 @@ const ProfilesPage = () => {
 
       setUserProfile(profile);
 
-      // Load saved resumes from localStorage
-      loadSavedResumes();
+      // Resumes live in the database; the old localStorage list is only a
+      // fallback for rows saved before the API existed.
+      await loadSavedResumes(user.id);
     } catch (error) {
       console.error('Error loading user data:', error);
       toast.error('Failed to load profile data');
@@ -89,8 +90,32 @@ const ProfilesPage = () => {
     }
   };
 
-  const loadSavedResumes = () => {
+  const loadSavedResumes = async (userId?: string) => {
     try {
+      if (userId) {
+        const { data, error } = await supabase
+          .from('resumes')
+          .select('id, title, template_id, content, ats_score, created_at, updated_at')
+          .eq('user_id', userId)
+          .order('updated_at', { ascending: false });
+
+        if (!error && data) {
+          setSavedResumes(
+            data.map((row: any) => ({
+              id: row.id,
+              name: row.title || 'Untitled Resume',
+              data: row.content ?? {},
+              targetRole: row.content?.personalInfo?.title || '',
+              atsScore: row.ats_score ?? 0,
+              createdAt: row.created_at,
+              updatedAt: row.updated_at,
+            }))
+          );
+          return;
+        }
+        if (error) console.warn('Could not load resumes from Supabase:', error.message);
+      }
+
       const saved = localStorage.getItem('smartats_saved_resumes');
       if (saved) {
         setSavedResumes(JSON.parse(saved));
@@ -101,15 +126,22 @@ const ProfilesPage = () => {
     }
   };
 
-  const deleteResume = (resumeId: string) => {
+  const deleteResume = async (resumeId: string) => {
     try {
-      const existingSaves = JSON.parse(localStorage.getItem('smartats_saved_resumes') || '[]');
-      const resumeToDelete = existingSaves.find((resume: SavedResume) => resume.id === resumeId);
-      const filtered = existingSaves.filter((resume: SavedResume) => resume.id !== resumeId);
-      
-      localStorage.setItem('smartats_saved_resumes', JSON.stringify(filtered));
-      setSavedResumes(filtered);
-      
+      const { error } = await supabase.from('resumes').delete().eq('id', resumeId);
+      if (error) throw error;
+
+      const remaining = savedResumes.filter((resume) => resume.id !== resumeId);
+      setSavedResumes(remaining);
+
+      // keep the legacy local list in sync
+      const localSaves = JSON.parse(localStorage.getItem('smartats_saved_resumes') || '[]');
+      localStorage.setItem(
+        'smartats_saved_resumes',
+        JSON.stringify(localSaves.filter((resume: SavedResume) => resume.id !== resumeId))
+      );
+
+      const resumeToDelete = savedResumes.find((resume) => resume.id === resumeId);
       if (resumeToDelete) {
         toast.success(`Resume "${resumeToDelete.name}" deleted successfully`);
       }
@@ -341,7 +373,7 @@ const ProfilesPage = () => {
                           <Download className="w-4 h-4" />
                         </button>
                         <Link
-                          href={`/builder?resume=${resume.id}`}
+                          href={`/builder/${resume.id}`}
                           className="p-2 text-green-400 hover:bg-gray-600 rounded-lg transition-colors"
                           title="Edit Resume"
                         >
